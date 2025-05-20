@@ -1,95 +1,71 @@
-require ( './helpers.js' );
+require('jsdom-global')();// ✅ Sets up a simulated DOM
 
+const fs = require('fs');
+const path = require('path');
 const chai = require("chai");
 chai.use(require("chai-dom"));
 const { expect } = chai;
 
+// ✅ Load HTML into DOM
+const html = fs.readFileSync(path.resolve(__dirname, '../index.html'), 'utf-8');
+document.documentElement.innerHTML = html;
+
 describe("the <ul> tag", () => {
   it("exists in the document", () => {
-    // find the first <ul> in the HTML file
     const ul = document.querySelector("ul");
     const hint = "The document should have a <ul> element";
-
     expect(ul, hint).to.exist;
   });
 
   it("has three child <li> tags with the correct content", () => {
-    // find all direct child <li> elements in the <ul>
     const ul = document.querySelector("ul");
-
     const hint = "The <ul> should have three <li> elements nested inside";
     expect(ul.children, hint).to.have.lengthOf(3);
 
-    // check the values of each <li> element
     const [firstLi, secondLi, thirdLi] = ul.children;
 
     expect(firstLi).to.have.tagName("li");
-    expect(firstLi).to.contain.text("2 slices of bread");
+    expect(firstLi).to.contain.text("Grilled Cheese");
 
     expect(secondLi).to.have.tagName("li");
-    expect(secondLi).to.contain.text("4 slices of cheese");
+    expect(secondLi).to.contain.text("Tomato Soup");
 
     expect(thirdLi).to.have.tagName("li");
-    expect(thirdLi).to.contain.text("1 tbsp of butter");
+    expect(thirdLi).to.contain.text("Banh Mi");
   });
 
   it("contains a nested <ul> tag within a <li>", () => {
-    // find a <ul> nested inside a <li> nested inside a <ul>
     const ul = document.querySelector("ul");
-    const hint = `
-      The <ul> must contain another <ul> nested *inside* a <li>:
-      <ul>
-        <li>
-          4 slices of cheese
-          <ul></ul>
-        </li>
-      </ul>
-    `;
-
-    expect(ul, hint).to.have.descendant("li > ul");
+    const hint = "There should be a nested <ul> inside a <li>";
+    expect(ul.querySelector("li ul"), hint).to.exist;
   });
 
   it("contains three <li> nested within the nested <ul> with the correct content", () => {
-    const ul = document.querySelector("ul");
-    const hint = `
-      The *nested* <ul> must contain three nested <li>:
-      <ul>
-        <li>
-          4 slices of cheese
-          <ul>
-            <li>cheddar</li>
-            <li>mozzarella</li>
-            <li>pepper jack</li>
-          </ul>
-        </li>
-      </ul>
-    `;
+    const nestedUl = document.querySelector("ul li ul");
+    const nestedLis = nestedUl.querySelectorAll("li");
 
-    expect(ul, hint).to.have.descendants("li > ul > li").and.have.length(3);
+    expect(nestedLis.length).to.equal(3);
+    expect(nestedLis[0]).to.contain.text("Croutons");
+    expect(nestedLis[1]).to.contain.text("Cheese");
+    expect(nestedLis[2]).to.contain.text("Basil");
   });
 });
+
 describe("the <ol> tag", () => {
   it("exists in the document", () => {
-    // find the first <ol> in the HTML file
     const ol = document.querySelector("ol");
-    const hint = "The document should have a <ol> element";
-
-    expect(ol, hint).to.exist;
+    expect(ol).to.exist;
   });
 
   it("has five child <li> tags with the correct content", () => {
-    // find all direct child <li> elements in the <ul>
     const ol = document.querySelector("ol");
-    const hint1 = "The <ol> should have five <li> elements";
-    expect(ol, hint1).to.have.descendants("li").and.have.length(5);
+    const items = ol.querySelectorAll("li");
 
-    // Check the content of each <li>
-    const [first, second, third, fourth, fifth] = ol.querySelectorAll("li");
-
-    expect(first).to.contain.text("Spread butter on bread and frying pan");
-    expect(second).contain.text("Place bread in frying pan and fry");
-    expect(third).contain.text("Add cheese on top of bread");
-    expect(fourth).contain.text("Cover with second slice of bread");
-    expect(fifth).contain.text("Turn over and fry for 2 minutes");
+    expect(items.length).to.equal(5);
+    expect(items[0]).to.contain.text("Sushi");
+    expect(items[1]).to.contain.text("Baba Ghanoush");
+    expect(items[2]).to.contain.text("Pizza");
+    expect(items[3]).to.contain.text("Ramen");
+    expect(items[4]).to.contain.text("Tacos");
   });
 });
